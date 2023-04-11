@@ -1,0 +1,4 @@
+.env
+chat.db*
+tempCodeRunnerFile.py
+venv/*
