@@ -13,4 +13,7 @@ To fine tune the model, run
 openai api fine_tunes.create -t data.jsonl -m davinci
 ```
 
-Use the online playground to test the fine tuned model.
+To get a sugggested text to a particular person, run the following command:
+```
+python suggest.py <person's phone number> <number of prior messages to read>
+```
