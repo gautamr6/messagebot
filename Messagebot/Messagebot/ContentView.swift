@@ -89,7 +89,7 @@ struct ContentView: View {
             Sidebar(buttonLabels: buttonLabels, selectedTab: $selectedTab, messageStore: messageStore)
 
             ChatScreenView(messages: messages, selectedTab: $selectedTab, messageStore: messageStore)
-                .navigationTitle("iMessage")
+                .navigationTitle("Messagebot")
         }
     }
 }
@@ -102,33 +102,39 @@ struct Sidebar: View {
     var messageStore: MessageStore
 
     var body: some View {
-        VStack {
+        VStack(spacing: 0) {
             HStack {
-                TextField("Enter a new message", text: $inputText)
+                TextField("Phone Number", text: $inputText)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .padding()
+                    .padding(.leading, 10)
+                    .padding(.trailing, 5)
                 
-                Button("Open conversation") {
+                Button("Open") {
                     messageStore.addConversation(phoneNumber: inputText)
                 }
+                .padding(.leading, 5)
+                .padding(.trailing, 10)
             }
-
-            Divider()
+            
+            Divider().padding(.top, 10)
 
             ForEach(buttonLabels, id: \.self) { label in
                 Button(action: {
                     selectedTab = label
                 }) {
                     Text("\(label)")
-                        .padding(.vertical, 8)
-                        .padding(.horizontal)
-                        .foregroundColor(selectedTab == label ? .white : .black)
-                        .background(selectedTab == label ? Color.blue : Color.white)
-                        .cornerRadius(8)
+                        .frame(maxWidth: .infinity)
+                        .foregroundColor(selectedTab == label ? Color.white: Color.black)
+                        .padding(.vertical)
                 }
+                .buttonStyle(PlainButtonStyle())
+                .background(selectedTab == label ? Color.blue : Color.clear)
+                
+                Divider()
             }
+            
+            Spacer()
         }
-        .frame(width: 200)
     }
 }
 
@@ -183,10 +189,6 @@ struct ChatScreenView: View {
 
     var body: some View {
         VStack {
-            Button("Refresh") {
-                messageStore.addConversation(phoneNumber: selectedTab)
-            }.padding(.vertical)
-            
             List(messages, id: \.id) { message in
                 ZStack {
                     if message.fromMe {
@@ -194,29 +196,34 @@ struct ChatScreenView: View {
                         HStack {
                             Spacer()
                             Text(message.text)
-                                .padding()
+                                .padding(.horizontal)
+                                .padding(.vertical, 10)
                                 .foregroundColor(.white)
+                                .background(Color.blue)
+                                .cornerRadius(10)
                         }
-                        .background(Color.blue)
-                        .cornerRadius(10)
                         .padding(.horizontal)
                     } else {
                         // Align to the left if message is from someone else
                         HStack {
                             Text(message.text)
-                                .padding()
+                                .padding(.horizontal)
+                                .padding(.vertical, 10)
                                 .foregroundColor(.black)
+                                .background(Color.gray)
+                                .cornerRadius(10)
                             Spacer()
                         }
-                        .background(Color.gray)
-                        .cornerRadius(10)
                         .padding(.horizontal)
                     }
                 }
             }
-            .padding(.vertical)
 
             HStack {
+                Button("↻") {
+                    messageStore.addConversation(phoneNumber: selectedTab)
+                }
+                
                 Button("Generate") {
                     generate()
                 }
