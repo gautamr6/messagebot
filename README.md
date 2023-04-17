@@ -1,7 +1,7 @@
 # messagebot
 Messagebot is an iMessage client for Mac that uses GPT to generate and send texts in your voice.
 
-![](Messagebot_demo.gif)
+![](Messagebot_demo_2.gif)
 
 ## Setup
 
