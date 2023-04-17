@@ -37,6 +37,7 @@ def predict_next_message(number, window_size):
         temperature=0.4,
         max_tokens=50,
         stop="###",
+        presence_penalty=-0.5
     )
 
     return response.choices[0].text.strip()

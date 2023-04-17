@@ -1,19 +1,25 @@
 # messagebot
-AI assistant to send texts on iMessages in your voice
+Messagebot is an iMessage client for Mac that uses GPT to generate and send texts in your voice.
 
-Create a `.env` file with your OpenAI API key.
+![](Messagebot_demo.gif)
 
-To generate the data, run
+## Setup
+
+1. Create a `.env` file with your OpenAI API key.
+
+2. To generate fine tuning data for a single conversation, run
 ```
-python generate_fine_tune_data.py
+python generate_fine_tune_data.py <phone_number>
 ```
 
-To fine tune the model, run
+3. To fine tune the model, run
 ```
 openai api fine_tunes.create -t data.jsonl -m davinci
 ```
 
-To get a sugggested text to a particular person, run the following command:
+4. Start the flask server, providing your fine tuned model name as input:
 ```
-python suggest.py <person's phone number> <number of prior messages to read>
+python app.py <model_name>
 ```
+
+5. Open the MacOS application.

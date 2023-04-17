@@ -1,8 +1,6 @@
 import json
+import sys
 from imessage_reader import fetch_data
-from dotenv import load_dotenv
-import os
-import openai
 
 # Create a FetchData instance
 fd = fetch_data.FetchData()
@@ -13,9 +11,9 @@ fd = fetch_data.FetchData()
 messages = fd.get_messages()
 
 window_size = 10
-number = "+14086019615"
+number = sys.argv[1]
 
-person_messages = [x for x in messages if x[0] == number and x[5] == 1]
+person_messages = [x for x in messages if number in x[0] and x[5] == 1]
 data = []
 
 for i in range(window_size, len(person_messages)):

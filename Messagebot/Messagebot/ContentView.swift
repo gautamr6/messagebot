@@ -41,7 +41,20 @@ struct MessageToSend: Codable {
 }
 
 class MessageStore: ObservableObject {
-    @Published var tabMessages = ["1": [MessageData(text: "Hi there!", fromMe: false), MessageData(text: "How are you?", fromMe: true)], "2": [MessageData(text: "Hello!", fromMe: false), MessageData(text: "I'm good. How are you?", fromMe: true), MessageData(text: "Great!", fromMe: false)]]
+//    @Published var tabMessages = ["1": [
+//        MessageData(text: "Hey! Have you made any plans for the weekend?", fromMe: true),
+//        MessageData(text: "Not yet. Why do you ask?", fromMe: false),
+//        MessageData(text: "I was thinking of taking a trip to the beach. Would you be interested in joining me?", fromMe: true),
+//        MessageData(text: "That sounds like fun! When were you thinking of going?", fromMe: false),
+//        MessageData(text: "I was thinking of leaving on Saturday morning and coming back on Sunday evening. Does that work for you?", fromMe: true),
+//        MessageData(text: "Yeah, I'm free this weekend. Let's do it!", fromMe: false),
+//        MessageData(text: "Awesome! I'll start looking for accommodations. Do you have any preferences?", fromMe: true),
+//        MessageData(text: "Not really. As long as it's close to the beach, I'm happy.", fromMe: false),
+//        MessageData(text: "Alright, I'll keep that in mind. Do you want to take a car or a train?", fromMe: true),
+//        MessageData(text: "I don't mind either way. What do you think?", fromMe: false)
+//      ]
+//    ]
+    @Published var tabMessages = [String: [MessageData]]()
     
     func addMessage(selectedTab: String, message: String) {
         tabMessages[selectedTab]?.append(MessageData(text: message, fromMe: true))
@@ -49,14 +62,14 @@ class MessageStore: ObservableObject {
     
     func addConversation(phoneNumber: String) {
         let url = URL(string: "http://127.0.0.1:5000/get_messages?number=\(phoneNumber)&num_messages=10")
-        
+
         let request = URLRequest(url: url!)
-        
+
         let session = URLSession.shared
         let task = session.dataTask(with: request, completionHandler: { data, response, error -> Void in
-            
+
             print(response!)
-            
+
             if let data = data, let messages = try? JSONDecoder().decode([[MyArrayElement]].self, from: data) {
                 let messagesText = messages.map { MessageData(text: $0[1].stringValue ?? "", fromMe: $0[5].intValue!  == 1) }
                 self.tabMessages.updateValue(messagesText, forKey: phoneNumber)
@@ -65,8 +78,22 @@ class MessageStore: ObservableObject {
                 print("couldn't decode data")
             }
         })
-        
+
         task.resume()
+        
+//        let messagesText = [
+//            MessageData(text: "Hey! Have you made any plans for the weekend?", fromMe: false),
+//            MessageData(text: "Not yet. Why do you ask?", fromMe: true),
+//            MessageData(text: "I was thinking of taking a trip to the beach. Would you be interested in joining me?", fromMe: false),
+//            MessageData(text: "That sounds like fun! When were you thinking of going?", fromMe: true),
+//            MessageData(text: "I was thinking of leaving on Saturday morning and coming back on Sunday evening. Does that work for you?", fromMe: false),
+//            MessageData(text: "Yeah, I'm free this weekend. Let's do it!", fromMe: true),
+//            MessageData(text: "Awesome! I'll start looking for accommodations. Do you have any preferences?", fromMe: false),
+//            MessageData(text: "Not really. As long as it's close to the beach, I'm happy.", fromMe: true),
+//            MessageData(text: "Alright, I'll keep that in mind. Do you want to take a car or a train?", fromMe: false),
+//          ]
+//
+//        self.tabMessages.updateValue(messagesText, forKey: phoneNumber)
     }
 
 }
@@ -91,6 +118,17 @@ struct ContentView: View {
             ChatScreenView(messages: messages, selectedTab: $selectedTab, messageStore: messageStore)
                 .navigationTitle("Messagebot")
         }
+    }
+}
+
+func formatPhoneNumber(number: String) -> String {
+    if number.count == 10 {
+        let areaCode = number.prefix(3)
+        let mid = number.prefix(6).suffix(3)
+        let ending = number.suffix(4)
+        return "(\(areaCode)) \(mid)-\(ending)"
+    } else {
+        return number
     }
 }
 
@@ -122,7 +160,7 @@ struct Sidebar: View {
                 Button(action: {
                     selectedTab = label
                 }) {
-                    Text("\(label)")
+                    Text(formatPhoneNumber(number: label))
                         .frame(maxWidth: .infinity)
                         .foregroundColor(selectedTab == label ? Color.white: Color.black)
                         .padding(.vertical)
@@ -147,25 +185,27 @@ struct ChatScreenView: View {
     
     func generate() {
         let url = URL(string: "http://127.0.0.1:5000/generate_message")
-        
+
         var request = URLRequest(url: url!)
         request.httpMethod = "POST"
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        
+
         let jsonData = try? JSONEncoder().encode(messages)
         request.httpBody = jsonData
 
         let session = URLSession.shared
         let task = session.dataTask(with: request, completionHandler: { data, response, error -> Void in
-            
+
             if let data = data, let decodedMessage = try? JSONDecoder().decode(GeneratedMessage.self, from: data) {
                 newMessage = decodedMessage.text
             } else {
                 print("couldn't decode data")
             }
         })
-        
+
         task.resume()
+//        sleep(1)
+//        newMessage = "I don't mind either way."
     }
     
     func send() {
@@ -232,6 +272,8 @@ struct ChatScreenView: View {
                 
                 Button("Send") {
                     messageStore.addMessage(selectedTab: selectedTab, message: newMessage)
+                    
+//                    newMessage = ""
                     send()
                 }
                 .disabled(newMessage.isEmpty)

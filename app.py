@@ -1,9 +1,9 @@
 from flask import Flask, request, jsonify
-import json
 from imessage_reader import fetch_data
 from dotenv import load_dotenv
 import os
 import openai
+import sys
 
 app = Flask(__name__)
 
@@ -36,12 +36,16 @@ def generate_message():
         prompt += message['text'] + '\n'
     prompt += "Me: " + "\n\n###\n\n"
 
+    model_name = sys.argv[1]
+
+    openai.api_key = os.getenv("OPENAI_API_KEY")
     response = openai.Completion.create(
-        model="davinci:ft-personal-2023-04-11-08-35-06",
+        model=model_name,
         prompt=prompt,
         max_tokens=50,
         stop="###",
         temperature=0.8,
+        presence_penalty=-0.5
     )
 
     return jsonify({'text': response.choices[0].text.strip()})
