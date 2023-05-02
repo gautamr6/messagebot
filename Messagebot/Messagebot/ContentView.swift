@@ -41,19 +41,6 @@ struct MessageToSend: Codable {
 }
 
 class MessageStore: ObservableObject {
-//    @Published var tabMessages = ["1": [
-//        MessageData(text: "Hey! Have you made any plans for the weekend?", fromMe: true),
-//        MessageData(text: "Not yet. Why do you ask?", fromMe: false),
-//        MessageData(text: "I was thinking of taking a trip to the beach. Would you be interested in joining me?", fromMe: true),
-//        MessageData(text: "That sounds like fun! When were you thinking of going?", fromMe: false),
-//        MessageData(text: "I was thinking of leaving on Saturday morning and coming back on Sunday evening. Does that work for you?", fromMe: true),
-//        MessageData(text: "Yeah, I'm free this weekend. Let's do it!", fromMe: false),
-//        MessageData(text: "Awesome! I'll start looking for accommodations. Do you have any preferences?", fromMe: true),
-//        MessageData(text: "Not really. As long as it's close to the beach, I'm happy.", fromMe: false),
-//        MessageData(text: "Alright, I'll keep that in mind. Do you want to take a car or a train?", fromMe: true),
-//        MessageData(text: "I don't mind either way. What do you think?", fromMe: false)
-//      ]
-//    ]
     @Published var tabMessages = [String: [MessageData]]()
     
     func addMessage(selectedTab: String, message: String) {
@@ -80,20 +67,6 @@ class MessageStore: ObservableObject {
         })
 
         task.resume()
-        
-//        let messagesText = [
-//            MessageData(text: "Hey! Have you made any plans for the weekend?", fromMe: false),
-//            MessageData(text: "Not yet. Why do you ask?", fromMe: true),
-//            MessageData(text: "I was thinking of taking a trip to the beach. Would you be interested in joining me?", fromMe: false),
-//            MessageData(text: "That sounds like fun! When were you thinking of going?", fromMe: true),
-//            MessageData(text: "I was thinking of leaving on Saturday morning and coming back on Sunday evening. Does that work for you?", fromMe: false),
-//            MessageData(text: "Yeah, I'm free this weekend. Let's do it!", fromMe: true),
-//            MessageData(text: "Awesome! I'll start looking for accommodations. Do you have any preferences?", fromMe: false),
-//            MessageData(text: "Not really. As long as it's close to the beach, I'm happy.", fromMe: true),
-//            MessageData(text: "Alright, I'll keep that in mind. Do you want to take a car or a train?", fromMe: false),
-//          ]
-//
-//        self.tabMessages.updateValue(messagesText, forKey: phoneNumber)
     }
 
 }
@@ -180,6 +153,7 @@ struct ChatScreenView: View {
     var messages: [MessageData]
     @Binding var selectedTab: String
     @State private var newMessage = ""
+    @State private var contextSize = ""
     
     var messageStore: MessageStore
     
@@ -189,8 +163,13 @@ struct ChatScreenView: View {
         var request = URLRequest(url: url!)
         request.httpMethod = "POST"
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-
-        let jsonData = try? JSONEncoder().encode(messages)
+        
+        var contextSizeInt = Int(contextSize) ?? 10
+        if contextSizeInt > messages.count {
+            contextSizeInt = messages.count
+        }
+        
+        let jsonData = try? JSONEncoder().encode(messages.suffix(contextSizeInt))
         request.httpBody = jsonData
 
         let session = URLSession.shared
@@ -204,8 +183,6 @@ struct ChatScreenView: View {
         })
 
         task.resume()
-//        sleep(1)
-//        newMessage = "I don't mind either way."
     }
     
     func send() {
@@ -264,6 +241,8 @@ struct ChatScreenView: View {
                     messageStore.addConversation(phoneNumber: selectedTab)
                 }
                 
+                TextField("# of input messages", text: $contextSize)
+                
                 Button("Generate") {
                     generate()
                 }
@@ -272,8 +251,6 @@ struct ChatScreenView: View {
                 
                 Button("Send") {
                     messageStore.addMessage(selectedTab: selectedTab, message: newMessage)
-                    
-//                    newMessage = ""
                     send()
                 }
                 .disabled(newMessage.isEmpty)

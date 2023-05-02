@@ -25,6 +25,7 @@ def get_messages():
 @app.route('/generate_message', methods=['POST'])
 def generate_message():
     messages = request.get_json()
+    print(messages)
 
     # Convert messages to text string
     prompt = ''
